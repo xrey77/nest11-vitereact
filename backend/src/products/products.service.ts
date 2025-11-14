@@ -1,0 +1,58 @@
+import { Injectable } from '@nestjs/common';
+import { PageDto } from './dto/page.dto';
+import { PaginationOptionsDto } from './dto/pagination-options.dto';
+import { Product } from './entities/product.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Like, Repository } from 'typeorm';
+import {
+  paginate,
+  Pagination,
+  IPaginationOptions,
+} from 'nestjs-typeorm-paginate';
+
+@Injectable()
+export class ProductsService {
+
+  constructor(
+    @InjectRepository(Product)
+    private productsRepository: Repository<Product>,
+  ) {}
+
+  async paginate(options: IPaginationOptions): Promise<Pagination<Product>> {
+    return paginate<Product>(this.productsRepository, options);
+  }
+
+  async findAllPaginated(options: PaginationOptionsDto): Promise<PageDto<Product>> {
+    let limit: number = 5;
+    let page: any = options.page;   
+    let offset: number = Math.ceil((page - 1) * limit);
+    let skip: number = offset;
+   
+    const [result, totalItems] = await this.productsRepository.findAndCount({
+      select: ['id','descriptions','qty','unit','sellprice'],
+      take: limit,
+      skip: skip,
+      order: { id: "ASC" },
+    });
+
+    return new PageDto<Product>(result, totalItems, page!, limit!);
+  }
+
+  async findSearchPaginated(page: number, keyword: string): Promise<PageDto<Product>> {
+    let limit: number = 5;
+    let offset: number = Math.ceil((page - 1) * limit);
+
+    let skip: number = offset;
+    const [result, totalItems] = await this.productsRepository.findAndCount({
+      select: ['id','descriptions','qty','unit','sellprice'],
+      take: limit,
+      skip: skip,
+      where: { descriptions: Like(`%${keyword}%`) },
+      order: { id: "ASC" },
+    });
+
+    return new PageDto<Product>(result, totalItems, page!, limit!);
+  }
+
+
+}

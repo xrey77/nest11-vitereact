@@ -10,10 +10,9 @@ const api = axios.create({
 
 const toDecimal = (number: any) => {
   const formatter = new Intl.NumberFormat('en-US', {
-    minimumFractionDigits: 2, // Ensures at least two decimal places
-    maximumFractionDigits: 2, // Limits to two decimal places
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
   });
-  // Format the number
   return formatter.format(number);
 };
 export default function Prodcatalog() {
@@ -23,11 +22,11 @@ export default function Prodcatalog() {
     const [message, setMessage] = useState('');
 
     const fetchCatalog = async (pg: any) => {
-      api.get(`/api/productlist/${pg}`)
+      api.get(`/api/products/list/${pg}`)
       .then((res: any) => {
-        setProds(res.data.products);
-        setTotpage(res.data.totpage);
-        setPage(res.data.page);
+        setProds(res.data.data);
+        setTotpage(res.data.totalPages);
+        setPage(res.data.currentPage);
       }, (error: any) => {
               setMessage(error.response.data.message);
               return;
@@ -41,37 +40,35 @@ export default function Prodcatalog() {
     const firstPage = (event: any) => {
         event.preventDefault();    
         page = 1;
-        setPage(page);
-        fetchCatalog(page);
-        return;    
+        return fetchCatalog(page);
       }
     
       const nextPage = (event: any) => {
         event.preventDefault();    
-        if (page === totpage) {
+        if (page == totpage) {
+            page = 0;
+            setPage(totpage);
             return;
+        } else {
+          page++;
+          return fetchCatalog(page);  
         }
-        setPage(page++);
-        fetchCatalog(page);
-        return;
       }
     
       const prevPage = (event: any) => {
         event.preventDefault();    
         if (page === 1) {
+          setPage(1);
           return;
           }
-          setPage(page--);
-          fetchCatalog(page);
-          return;    
+          page--;
+          return fetchCatalog(page);
       }
     
       const lastPage = (event: any) => {
         event.preventDefault();
         page = totpage;
-        setPage(page);
-        fetchCatalog(page);
-        return;    
+        return fetchCatalog(page);
       }
 
     return(

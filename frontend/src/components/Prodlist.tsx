@@ -1,6 +1,5 @@
 import axios from 'axios';
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 
 const api = axios.create({
   baseURL: "http://localhost:3000",
@@ -13,10 +12,9 @@ export default function Prodlist() {
 
   const toDecimal = (number: any) => {
     const formatter = new Intl.NumberFormat('en-US', {
-      minimumFractionDigits: 2, // Ensures at least two decimal places
-      maximumFractionDigits: 2, // Limits to two decimal places
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
     });
-    // Format the number
     return formatter.format(number);
   };
 
@@ -26,13 +24,13 @@ export default function Prodlist() {
 
     let [products, setProducts] = useState<[]>([]);
 
-    const fetchProducts = async (pg: any) => {
-      api.get(`api/productlist/${pg}`)
+    const fetchProducts = (pg: any) => {
+      api.get(`api/products/list/${pg}`)
       .then((res: any) => {
-        setProducts(res.data.products);
-        setTotpage(res.data.totpage);
-        setTotalrecs(res.data.totalrecs);
-        setPage(res.data.page);
+        setProducts(res.data.data);
+        setTotpage(res.data.totalPages);
+        setTotalrecs(res.data.totalItems);
+        setPage(res.data.currentPage);
       }, (error: any) => {
               console.log(error.response.data.message);
               return;
@@ -46,7 +44,6 @@ export default function Prodlist() {
     const firstPage = (event: any) => {
         event.preventDefault();    
         page = 1;
-        setPage(page);
         fetchProducts(page);
         return;    
       }
@@ -56,9 +53,8 @@ export default function Prodlist() {
         if (page === totpage) {
             return;
         }
-        setPage(page++);
-        fetchProducts(page);
-        return;
+        page++;
+        return fetchProducts(page);
       }
     
       const prevPage = (event: any) => {
@@ -66,17 +62,14 @@ export default function Prodlist() {
         if (page === 1) {
           return;
           }
-          setPage(page--);
-          fetchProducts(page);
-          return;    
+          page--;
+          return fetchProducts(page);
       }
     
       const lastPage = (event: any) => {
         event.preventDefault();
         page = totpage;
-        setPage(page);
-        fetchProducts(page);
-        return;    
+        return fetchProducts(page);
       }  
   
   return (
@@ -112,10 +105,10 @@ export default function Prodlist() {
 
             <nav aria-label="Page navigation example">
         <ul className="pagination sm">
-          <li className="page-item"><Link onClick={lastPage} className="page-link sm" to="/#">Last</Link></li>
-          <li className="page-item"><Link onClick={prevPage} className="page-link sm" to="/#">Previous</Link></li>
-          <li className="page-item"><Link onClick={nextPage} className="page-link sm" to="/#">Next</Link></li>
-          <li className="page-item"><Link onClick={firstPage} className="page-link sm" to="/#">First</Link></li>
+          <li className="page-item"><a onClick={lastPage} className="page-link sm" href="/#">Last</a></li>
+          <li className="page-item"><a onClick={prevPage} className="page-link sm" href="/#">Previous</a></li>
+          <li className="page-item"><a onClick={nextPage} className="page-link sm" href="/#">Next</a></li>
+          <li className="page-item"><a onClick={firstPage} className="page-link sm" href="/#">First</a></li>
           <li className="page-item page-link text-danger sm">Page&nbsp;{page} of&nbsp;{totpage}</li>
 
         </ul>

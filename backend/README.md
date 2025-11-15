@@ -4,6 +4,12 @@
 <p>1. Node 20.19.4</p>
 <p>2. Npm 11.5.1</p>
 
+<p>FEATURES:</p>
+<p>1. User Login, Logout and Account Registration</p>
+<p>2. Multi-Factor Authenticator (MFA)</p>
+<p>3. User Profile, Change Password, Enable/Disable MFA</p>
+<p>4. Upload User's Profile Picture </p>
+<p>5. Products Listings, Catalogs pagination and Product Search</p>
 
 
 <p align="center">

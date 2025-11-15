@@ -1,6 +1,5 @@
-import { Controller, DefaultValuePipe, Get, ParseIntPipe, Query } from '@nestjs/common';
+import { Controller, DefaultValuePipe, Get, Param, ParseIntPipe, Query } from '@nestjs/common';
 import { ProductsService } from './products.service';
-import { PaginationOptionsDto } from './dto/pagination-options.dto';
 import { PageDto } from './dto/page.dto';
 import { Product } from './entities/product.entity';
 import { Pagination } from 'nestjs-typeorm-paginate';
@@ -9,7 +8,9 @@ import { Pagination } from 'nestjs-typeorm-paginate';
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
-  @Get('list')
+  //Another way of Pagination
+  //syntax : http://localhost:3000/api/products/pagination?page=1
+  @Get('pagination')
   async index(
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number = 1,
   ): Promise<Pagination<Product>> {
@@ -20,15 +21,15 @@ export class ProductsController {
     });
   }
 
-  // http://localhost:3000/api/products/productlist?page=1
-  @Get('productlist')
-  async findAll(@Query() paginationOptions: PaginationOptionsDto): Promise<PageDto<Product>> {
-      return this.productsService.findAllPaginated(paginationOptions);
+  //syntax: http://localhost:3000/api/products/list?page=1
+  @Get('list/:page')
+  async findAll(@Param('page')page: number): Promise<PageDto<Product>> {
+      return this.productsService.findAllPaginated(page);
   }
 
-  //http://localhost:3000/api/products/productsearch?page=1&keyword=cineo
-  @Get('productsearch')
-  async findSearch(@Query('page')page: number, @Query('keyword')keyword: string, ): Promise<PageDto<Product>> {
+  //syntax : http://localhost:3000/api/products/productsearch?page=1&keyword=cineo
+  @Get('search/:page/:keyword')
+  async findSearch(@Param('page')page: number, @Param('keyword')keyword: string, ): Promise<PageDto<Product>> {
       return this.productsService.findSearchPaginated(page,keyword);
   }
 

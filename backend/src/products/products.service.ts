@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { PageDto } from './dto/page.dto';
-import { PaginationOptionsDto } from './dto/pagination-options.dto';
 import { Product } from './entities/product.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Like, Repository } from 'typeorm';
@@ -22,14 +21,13 @@ export class ProductsService {
     return paginate<Product>(this.productsRepository, options);
   }
 
-  async findAllPaginated(options: PaginationOptionsDto): Promise<PageDto<Product>> {
+  async findAllPaginated(page: number): Promise<PageDto<Product>> {
     let limit: number = 5;
-    let page: any = options.page;   
     let offset: number = Math.ceil((page - 1) * limit);
     let skip: number = offset;
    
     const [result, totalItems] = await this.productsRepository.findAndCount({
-      select: ['id','descriptions','qty','unit','sellprice'],
+      select: ['id','descriptions','qty','unit','sellprice','productpicture'],
       take: limit,
       skip: skip,
       order: { id: "ASC" },
@@ -44,7 +42,7 @@ export class ProductsService {
 
     let skip: number = offset;
     const [result, totalItems] = await this.productsRepository.findAndCount({
-      select: ['id','descriptions','qty','unit','sellprice'],
+      select: ['id','descriptions','qty','unit','sellprice','productpicture'],
       take: limit,
       skip: skip,
       where: { descriptions: Like(`%${keyword}%`) },

@@ -2,17 +2,16 @@ import axios from 'axios';
 import { useState } from 'react';
 
 const api = axios.create({
-  baseURL: "http://localhost:8080",
+  baseURL: "http://localhost:3000",
   headers: {'Accept': 'application/json',
             'Content-Type': 'application/json'}
 })
 
 const toDecimal = (number: any) => {
   const formatter = new Intl.NumberFormat('en-US', {
-    minimumFractionDigits: 2, // Ensures at least two decimal places
-    maximumFractionDigits: 2, // Limits to two decimal places
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
   });
-  // Format the number
   return formatter.format(number);
 };
 
@@ -20,25 +19,106 @@ const toDecimal = (number: any) => {
 export default function Prodsearch() {
   const [prodsearch, setProdsearch] = useState<[]>([]);
   const [message, setMessage] = useState<string>('');
+  let [page, setPage] = useState<number>(1);
+  let [totpage, setTotpage] = useState<number>(0);
   let [searchkey, setSearchkey] = useState<string>('');
 
   const getProdsearch = async (event: any) => {
       event.preventDefault();
       setMessage("please wait .");
-
-      api.get(`/api/productsearch/${searchkey}`)
+      await api.get(`/api/products/search/${page}/${searchkey}`)
       .then((res: any) => {
-          setProdsearch(res.data);
-      }, (error: any) => {
-        setMessage(error.response.data.messages.error);
+        if (res.data.totalPages == 0) {
+
+          setMessage('Product not found.');
+          setTimeout(() => {
+            setMessage('');
+          }, 3000);
+
+        } else {
+          setProdsearch(res.data.data);
+          setTotpage(res.data.totalPages);
+          setPage(res.data.currentPage);
+          setTimeout(() => {
+            setMessage('');
+          }, 1000);
+
+        }
+  
+      }, (error: any) => {        
+        setMessage(error.response.data.message);
         setProdsearch([]);
         setTimeout(() => {
             setMessage('');
         }, 3000);
           return;
       });  
-      setMessage('');
   }
+
+  const getProdPage = async (page: number) => {
+    setMessage("please wait .");
+    await api.get(`/api/products/search/${page}/${searchkey}`)
+    .then((res: any) => {
+      if (res.data.totalPages == 0) {
+
+        setMessage('Product not found.');
+        setTimeout(() => {
+          setMessage('');
+        }, 3000);
+
+      } else {
+        setProdsearch(res.data.data);
+        setTotpage(res.data.totalPages);
+        setPage(res.data.currentPage);
+        setTimeout(() => {
+          setMessage('');
+        }, 1000);
+
+      }
+
+    }, (error: any) => {        
+      setMessage(error.response.data.message);
+      setProdsearch([]);
+      setTimeout(() => {
+          setMessage('');
+      }, 3000);
+        return;
+    });  
+}
+
+  const firstPage = (event: any) => {
+    event.preventDefault();    
+    page = 1;
+    return getProdPage(page);
+  }
+
+  const nextPage = (event: any) => {
+    event.preventDefault();    
+    if (page == totpage) {
+        page = 0;
+        setPage(totpage);
+        return;
+    } else {
+      page++;
+      return getProdPage(page);  
+    }
+  }
+
+  const prevPage = (event: any) => {
+    event.preventDefault();    
+    if (page === 1) {
+      setPage(1);
+      return;
+      }
+      page--;
+      return getProdPage(page);
+  }
+
+  const lastPage = (event: any) => {
+    event.preventDefault();
+    page = totpage;
+    return getProdPage(page);
+  }  
    
 return (
   <div className="container mb-10">
@@ -74,8 +154,24 @@ return (
         );    
       })}
         </div>          
+        {
+          totpage > 1 ? 
+            <nav aria-label="Page navigation example">
+            <ul className="pagination sm mt-3">
+              <li className="page-item"><a onClick={lastPage} className="page-link sm" href="/#">Last</a></li>
+              <li className="page-item"><a onClick={prevPage} className="page-link sm" href="/#">Previous</a></li>
+              <li className="page-item"><a onClick={nextPage} className="page-link sm" href="/#">Next</a></li>
+              <li className="page-item"><a onClick={firstPage} className="page-link sm" href="/#">First</a></li>
+              <li className="page-item page-link text-danger sm">Page&nbsp;{page} of&nbsp;{totpage}</li>
+            </ul>
+          </nav>
+        :
+        null
+        }
+
         <br/><br/><br/>
       </div>
   </div>  
   )
 }
+
